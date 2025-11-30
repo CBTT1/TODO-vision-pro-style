@@ -41,27 +41,27 @@ export function TodoCard({ todo, onToggle, onDelete, onEdit, isDragging }: TodoC
             className={cn(
               "flex-shrink-0 w-6 h-6 rounded-full border-2 transition-all",
               todo.completed
-                ? "bg-[#50fa7b] border-[#50fa7b]"
-                : "border-[#bd93f9]/50 hover:border-[#bd93f9]"
+                ? "bg-[#50fa7b] border-[#50fa7b] dark:bg-[#50fa7b] light:bg-[#2d8659]"
+                : "border-primary/50 hover:border-primary"
             )}
           >
             {todo.completed && (
-              <Check className="w-4 h-4 text-[#282a36] m-auto" />
+              <Check className="w-4 h-4 text-background m-auto" />
             )}
           </button>
           
           <div className="flex-1 min-w-0">
             <p
               className={cn(
-                "text-[#f8f8f2] text-lg font-medium",
-                todo.completed && "line-through text-[#6272a4]"
+                "text-foreground text-lg font-medium",
+                todo.completed && "line-through text-muted-foreground"
               )}
             >
               {todo.text}
             </p>
             
             {todo.aiSuggestion && (
-              <div className="mt-2 flex items-start gap-2 text-sm text-[#8be9fd]">
+              <div className="mt-2 flex items-start gap-2 text-sm text-accent">
                 <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <p className="italic">{todo.aiSuggestion}</p>
               </div>
@@ -84,12 +84,12 @@ export function TodoCard({ todo, onToggle, onDelete, onEdit, isDragging }: TodoC
         </div>
         
         <div className="flex items-center gap-2">
-          <GripVertical className="w-5 h-5 text-[#6272a4] group-hover:text-[#bd93f9] transition-colors" />
+          <GripVertical className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onEdit(todo)}
-            className="text-[#6272a4] hover:text-[#8be9fd] hover:bg-[#8be9fd]/10"
+            className="text-muted-foreground hover:text-accent hover:bg-accent/10"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -97,7 +97,7 @@ export function TodoCard({ todo, onToggle, onDelete, onEdit, isDragging }: TodoC
             variant="ghost"
             size="icon"
             onClick={() => onDelete(todo.id)}
-            className="text-[#6272a4] hover:text-[#ff5555] hover:bg-[#ff5555]/10"
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

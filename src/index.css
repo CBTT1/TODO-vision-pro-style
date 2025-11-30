@@ -3,27 +3,51 @@
 @tailwind utilities;
 
 @layer base {
+  /* 深色模式 - 末影之地风格 */
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 0%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 0%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 100%;
+    --background: 260 30% 8%;
+    --foreground: 280 50% 85%;
+    --card: 260 30% 12%;
+    --card-foreground: 280 50% 85%;
+    --popover: 260 30% 12%;
+    --popover-foreground: 280 50% 85%;
+    --primary: 280 50% 75%;
+    --primary-foreground: 260 30% 8%;
+    --secondary: 260 40% 20%;
+    --secondary-foreground: 280 50% 85%;
+    --muted: 260 30% 15%;
+    --muted-foreground: 280 30% 60%;
+    --accent: 280 50% 30%;
+    --accent-foreground: 280 50% 85%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 280 50% 85%;
+    --border: 280 40% 25%;
+    --input: 280 40% 20%;
+    --ring: 280 50% 75%;
     --radius: 0.5rem;
+  }
+
+  /* 浅色模式 - 波光粼粼的湖面旁的村庄 */
+  .light {
+    --background: 200 40% 95%;
+    --foreground: 200 60% 20%;
+    --card: 200 30% 98%;
+    --card-foreground: 200 60% 20%;
+    --popover: 200 30% 98%;
+    --popover-foreground: 200 60% 20%;
+    --primary: 200 70% 50%;
+    --primary-foreground: 200 40% 95%;
+    --secondary: 150 40% 70%;
+    --secondary-foreground: 200 60% 20%;
+    --muted: 200 20% 90%;
+    --muted-foreground: 200 40% 40%;
+    --accent: 150 50% 60%;
+    --accent-foreground: 200 60% 20%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 200 40% 95%;
+    --border: 200 30% 80%;
+    --input: 200 30% 85%;
+    --ring: 200 70% 50%;
   }
 }
 
@@ -37,33 +61,63 @@
   }
 }
 
-/* 毛玻璃效果 */
+/* 毛玻璃效果 - 深色模式（末影之地） */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(138, 43, 226, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(138, 43, 226, 0.3);
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(138, 43, 226, 0.15);
   backdrop-filter: blur(30px) saturate(200%);
   -webkit-backdrop-filter: blur(30px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(138, 43, 226, 0.4);
 }
 
-/* 3D 深度阴影 */
+/* 毛玻璃效果 - 浅色模式（村庄） */
+.light .glass {
+  background: rgba(135, 206, 250, 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(135, 206, 250, 0.4);
+}
+
+.light .glass-strong {
+  background: rgba(135, 206, 250, 0.25);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(135, 206, 250, 0.5);
+}
+
+/* 3D 深度阴影 - 深色模式 */
 .depth-shadow {
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    0 20px 60px rgba(138, 43, 226, 0.3),
+    0 0 0 1px rgba(138, 43, 226, 0.2) inset,
+    0 1px 0 rgba(189, 147, 249, 0.3) inset;
 }
 
 .depth-shadow-hover {
   box-shadow: 
-    0 30px 80px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
-    0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    0 30px 80px rgba(138, 43, 226, 0.4),
+    0 0 0 1px rgba(138, 43, 226, 0.3) inset,
+    0 1px 0 rgba(189, 147, 249, 0.4) inset;
+}
+
+/* 3D 深度阴影 - 浅色模式 */
+.light .depth-shadow {
+  box-shadow: 
+    0 20px 60px rgba(135, 206, 250, 0.2),
+    0 0 0 1px rgba(135, 206, 250, 0.3) inset,
+    0 1px 0 rgba(173, 216, 230, 0.4) inset;
+}
+
+.light .depth-shadow-hover {
+  box-shadow: 
+    0 30px 80px rgba(135, 206, 250, 0.3),
+    0 0 0 1px rgba(135, 206, 250, 0.4) inset,
+    0 1px 0 rgba(173, 216, 230, 0.5) inset;
 }
 

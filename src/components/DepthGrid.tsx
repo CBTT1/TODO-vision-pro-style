@@ -2,7 +2,11 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh } from 'three'
 
-export function DepthGrid() {
+interface DepthGridProps {
+  isDark: boolean
+}
+
+export function DepthGrid({ isDark }: DepthGridProps) {
   const gridRef = useRef<Mesh>(null)
 
   useFrame((state) => {
@@ -16,9 +20,9 @@ export function DepthGrid() {
     <mesh ref={gridRef} position={[0, 0, -10]} rotation={[0, 0, 0]}>
       <planeGeometry args={[20, 20, 20, 20]} />
       <meshBasicMaterial
-        color="#bd93f9"
+        color={isDark ? '#8b5cf6' : '#87ceeb'}
         wireframe
-        opacity={0.15}
+        opacity={isDark ? 0.15 : 0.25}
         transparent
       />
     </mesh>

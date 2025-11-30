@@ -6,6 +6,7 @@ import { TodoList } from './components/TodoList'
 import { AISuggestions } from './components/AISuggestions'
 import { AIConfirmation } from './components/AIConfirmation'
 import { CalendarTimeline } from './components/CalendarTimeline'
+import { ThemeToggle } from './components/ThemeToggle'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './components/ui/dialog'
@@ -23,6 +24,10 @@ function App() {
   const [newTodoText, setNewTodoText] = useState('')
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme-mode')
+    return saved ? saved === 'dark' : true
+  })
   const [pendingChanges, setPendingChanges] = useState<{
     originalTodos: Todo[]
     modifiedTodos: Todo[]
@@ -31,6 +36,15 @@ function App() {
   useEffect(() => {
     localStorage.setItem('vision-pro-todos', JSON.stringify(todos))
   }, [todos])
+
+  useEffect(() => {
+    localStorage.setItem('theme-mode', isDarkMode ? 'dark' : 'light')
+    if (isDarkMode) {
+      document.documentElement.classList.remove('light')
+    } else {
+      document.documentElement.classList.add('light')
+    }
+  }, [isDarkMode])
 
   const addTodo = () => {
     if (newTodoText.trim()) {
@@ -122,9 +136,9 @@ function App() {
     <div className="min-h-screen relative overflow-hidden">
       <Scene3D />
       
-      <div className="relative z-10 flex gap-6 px-4 py-12 max-w-7xl mx-auto">
+      <div className="relative z-10 flex gap-8 px-4 py-12 max-w-7xl mx-auto">
         {/* 左侧日历时间表 */}
-        <div className="w-80 flex-shrink-0">
+        <div className="w-72 flex-shrink-0">
           <CalendarTimeline 
             todos={todos} 
             onDateSelect={setSelectedDate}
@@ -138,14 +152,17 @@ function App() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-12"
+          className="mb-12 flex items-start justify-between"
         >
-          <h1 className="text-6xl font-bold text-[#f8f8f2] mb-4 tracking-tight">
-            Vision Pro TODO
-          </h1>
-          <p className="text-[#6272a4] text-lg">
-            空间计算待办事项管理
-          </p>
+          <div>
+            <h1 className="text-6xl font-bold text-foreground mb-4 tracking-tight">
+              Usher TODO
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              鼻涕待办事项管理
+            </p>
+          </div>
+          <ThemeToggle isDark={isDarkMode} onToggle={() => setIsDarkMode(!isDarkMode)} />
         </motion.div>
 
         <div className="flex gap-4 mb-8">
@@ -172,7 +189,7 @@ function App() {
 
         {activeTodos.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#f8f8f2] mb-4">
+            <h2 className="text-2xl font-semibold text-foreground mb-4">
               进行中 ({activeTodos.length})
             </h2>
             <TodoList
@@ -187,7 +204,7 @@ function App() {
 
         {completedTodos.length > 0 && (
           <div>
-            <h2 className="text-2xl font-semibold text-[#6272a4] mb-4">
+            <h2 className="text-2xl font-semibold text-muted-foreground mb-4">
               已完成 ({completedTodos.length})
             </h2>
             <TodoList
@@ -202,17 +219,17 @@ function App() {
 
         {todos.length === 0 && (
           <div className="glass glass-strong rounded-2xl p-12 text-center depth-shadow">
-            <p className="text-[#6272a4] text-lg">还没有待办事项，开始添加吧！</p>
+            <p className="text-muted-foreground text-lg">还没有待办事项，开始添加吧！</p>
           </div>
         )}
         </div>
       </div>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="glass glass-strong border-[#bd93f9]/30 text-[#f8f8f2] bg-[#282a36]">
+        <DialogContent className="glass glass-strong border-primary/30 text-foreground bg-card">
           <DialogHeader>
-            <DialogTitle className="text-[#f8f8f2]">添加新待办</DialogTitle>
-            <DialogDescription className="text-[#6272a4]">
+            <DialogTitle className="text-foreground">添加新待办</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               创建一个新的待办事项
             </DialogDescription>
           </DialogHeader>
@@ -223,7 +240,7 @@ function App() {
               value={newTodoText}
               onChange={(e) => setNewTodoText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addTodo()}
-              className="bg-[#44475a] border-[#bd93f9]/30 text-[#f8f8f2] placeholder:text-[#6272a4] focus:border-[#bd93f9]"
+              className="bg-input border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
             />
             
             <div className="flex gap-2">
@@ -235,8 +252,8 @@ function App() {
                   onClick={() => setPriority(p)}
                   className={
                     priority === p 
-                      ? 'bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90' 
-                      : 'border-[#bd93f9]/30 text-[#6272a4] hover:border-[#bd93f9] hover:text-[#f8f8f2]'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                      : 'border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground'
                   }
                 >
                   {p === 'high' ? '高优先级' : p === 'medium' ? '中优先级' : '低优先级'}
@@ -249,13 +266,13 @@ function App() {
             <Button
               variant="outline"
               onClick={() => setIsAddDialogOpen(false)}
-              className="border-[#bd93f9]/30 text-[#6272a4] hover:border-[#bd93f9] hover:text-[#f8f8f2]"
+              className="border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"
             >
               取消
             </Button>
             <Button
               onClick={addTodo}
-              className="bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               添加
             </Button>
@@ -265,10 +282,10 @@ function App() {
 
       {/* 编辑待办对话框 */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="glass glass-strong border-[#bd93f9]/30 text-[#f8f8f2] bg-[#282a36]">
+        <DialogContent className="glass glass-strong border-primary/30 text-foreground bg-card">
           <DialogHeader>
-            <DialogTitle className="text-[#f8f8f2]">编辑待办</DialogTitle>
-            <DialogDescription className="text-[#6272a4]">
+            <DialogTitle className="text-foreground">编辑待办</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               修改待办事项内容
             </DialogDescription>
           </DialogHeader>
@@ -279,7 +296,7 @@ function App() {
               value={newTodoText}
               onChange={(e) => setNewTodoText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-              className="bg-[#44475a] border-[#bd93f9]/30 text-[#f8f8f2] placeholder:text-[#6272a4] focus:border-[#bd93f9]"
+              className="bg-input border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
             />
             
             <div className="flex gap-2">
@@ -291,8 +308,8 @@ function App() {
                   onClick={() => setPriority(p)}
                   className={
                     priority === p 
-                      ? 'bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90' 
-                      : 'border-[#bd93f9]/30 text-[#6272a4] hover:border-[#bd93f9] hover:text-[#f8f8f2]'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                      : 'border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground'
                   }
                 >
                   {p === 'high' ? '高优先级' : p === 'medium' ? '中优先级' : '低优先级'}
@@ -305,13 +322,13 @@ function App() {
             <Button
               variant="outline"
               onClick={cancelEdit}
-              className="border-[#bd93f9]/30 text-[#6272a4] hover:border-[#bd93f9] hover:text-[#f8f8f2]"
+              className="border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"
             >
               取消
             </Button>
             <Button
               onClick={saveEdit}
-              className="bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               保存
             </Button>
