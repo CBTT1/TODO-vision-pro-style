@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { Sparkles, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from './ui/button'
-
 import { Todo } from '@/types/todo'
+import { generateSmartSuggestions, AISuggestion } from '@/lib/aiAnalyzer'
 
 interface AISuggestionsProps {
   todos: Todo[]
@@ -12,7 +12,7 @@ interface AISuggestionsProps {
 
 export function AISuggestions({ todos, onApplySuggestion }: AISuggestionsProps) {
   const [isExpanded, setIsExpanded] = useState(true)
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const activeTodos = useMemo(() => todos.filter(t => !t.completed), [todos])
@@ -27,75 +27,14 @@ export function AISuggestions({ todos, onApplySuggestion }: AISuggestionsProps) 
   const generateSuggestions = async () => {
     setIsLoading(true)
     
-    // 模拟 AI 建议生成（实际应用中应该调用真实的 AI API）
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 模拟 AI 分析延迟（实际应用中可以调用真实的 AI API）
+    await new Promise(resolve => setTimeout(resolve, 800))
     
-    const suggestions: string[] = []
+    // 使用智能分析生成建议
+    const smartSuggestions = generateSmartSuggestions(todos)
     
-    if (activeTodos.length > 5) {
-      suggestions.push('您有较多待办事项，建议按优先级分组处理')
-    }
-    
-    if (activeTodos.some(t => t.text.toLowerCase().includes('会议'))) {
-      suggestions.push('检测到会议相关任务，建议提前准备议程')
-    }
-    
-    if (activeTodos.length === 0) {
-      suggestions.push('恭喜！所有任务已完成，可以休息一下了')
-    } else {
-      suggestions.push('建议将相似任务合并处理，提高效率')
-      suggestions.push('可以尝试番茄工作法，专注完成高优先级任务')
-    }
-    
-    setSuggestions(suggestions)
+    setSuggestions(smartSuggestions)
     setIsLoading(false)
-  }
-
-  const applySuggestionToTodos = (suggestion: string, currentTodos: Todo[]): Todo[] => {
-    const modifiedTodos = [...currentTodos]
-    
-    // 根据不同的建议类型应用不同的修改
-    if (suggestion.includes('按优先级分组')) {
-      // 将前3个待办事项设置为高优先级
-      modifiedTodos.slice(0, 3).forEach((todo, index) => {
-        if (!todo.completed && index < 3) {
-          modifiedTodos[index] = { ...todo, priority: 'high' as const }
-        }
-      })
-    } else if (suggestion.includes('会议')) {
-      // 将包含"会议"的待办事项设置为高优先级
-      modifiedTodos.forEach((todo, index) => {
-        if (!todo.completed && todo.text.toLowerCase().includes('会议')) {
-          modifiedTodos[index] = { ...todo, priority: 'high' as const }
-        }
-      })
-    } else if (suggestion.includes('合并处理')) {
-      // 将相似的任务合并（这里简化处理，将前两个相似任务合并）
-      if (modifiedTodos.length >= 2) {
-        const first = modifiedTodos[0]
-        const second = modifiedTodos[1]
-        if (!first.completed && !second.completed) {
-          modifiedTodos[0] = {
-            ...first,
-            text: `${first.text} + ${second.text}`,
-            priority: 'high' as const
-          }
-          modifiedTodos.splice(1, 1) // 删除第二个
-        }
-      }
-    } else if (suggestion.includes('番茄工作法')) {
-      // 将高优先级任务标记为需要专注
-      modifiedTodos.forEach((todo, index) => {
-        if (!todo.completed && todo.priority === 'high') {
-          modifiedTodos[index] = {
-            ...todo,
-            text: `🍅 ${todo.text}`
-          }
-        }
-      })
-    }
-    
-    return modifiedTodos
   }
 
   return (
@@ -128,6 +67,11 @@ export function AISuggestions({ todos, onApplySuggestion }: AISuggestionsProps) 
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-[#bd93f9]" />
+                  <span className="ml-2 text-sm text-[#6272a4]">正在分析任务...</span>
+                </div>
+              ) : suggestions.length === 0 ? (
+                <div className="text-center py-8 text-[#6272a4] text-sm">
+                  暂无建议
                 </div>
               ) : (
                 suggestions.map((suggestion, index) => (
@@ -136,20 +80,40 @@ export function AISuggestions({ todos, onApplySuggestion }: AISuggestionsProps) 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="glass rounded-lg p-4 border-[#bd93f9]/20 hover:border-[#bd93f9]/40 transition-colors"
+                    className={`glass rounded-lg p-4 transition-colors ${
+                      suggestion.priority === 'high'
+                        ? 'border-[#ff5555]/30 hover:border-[#ff5555]/50'
+                        : suggestion.priority === 'medium'
+                        ? 'border-[#ffb86c]/30 hover:border-[#ffb86c]/50'
+                        : 'border-[#bd93f9]/20 hover:border-[#bd93f9]/40'
+                    }`}
                   >
-                    <p className="text-[#f8f8f2] text-sm mb-3">{suggestion}</p>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-xs text-[#8be9fd] hover:text-[#bd93f9] hover:bg-[#bd93f9]/10"
-                      onClick={() => {
-                        const modifiedTodos = applySuggestionToTodos(suggestion, todos)
-                        onApplySuggestion(suggestion, modifiedTodos)
-                      }}
-                    >
-                      应用建议
-                    </Button>
+                    <div className="flex items-start gap-2 mb-3">
+                      {suggestion.priority === 'high' && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-[#ff5555]/20 text-[#ff5555]">
+                          高优先级
+                        </span>
+                      )}
+                      {suggestion.type === 'encourage' && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-[#50fa7b]/20 text-[#50fa7b]">
+                          鼓励
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[#f8f8f2] text-sm mb-3">{suggestion.text}</p>
+                    {suggestion.action && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs text-[#8be9fd] hover:text-[#bd93f9] hover:bg-[#bd93f9]/10"
+                        onClick={() => {
+                          const modifiedTodos = suggestion.action!()
+                          onApplySuggestion(suggestion.text, modifiedTodos)
+                        }}
+                      >
+                        应用建议
+                      </Button>
+                    )}
                   </motion.div>
                 ))
               )}
