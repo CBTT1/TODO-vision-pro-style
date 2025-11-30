@@ -101,11 +101,11 @@ export function AISuggestions({ todos, onApplySuggestion }: AISuggestionsProps) 
                       )}
                     </div>
                     <p className="text-[#f8f8f2] text-sm mb-3">{suggestion.text}</p>
-                    {suggestion.action && (
+                    {suggestion.action ? (
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-xs text-[#8be9fd] hover:text-[#bd93f9] hover:bg-[#bd93f9]/10"
+                        className="text-xs text-[#8be9fd] hover:text-[#bd93f9] hover:bg-[#bd93f9]/10 w-full"
                         onClick={() => {
                           const modifiedTodos = suggestion.action!()
                           onApplySuggestion(suggestion.text, modifiedTodos)
@@ -113,6 +113,10 @@ export function AISuggestions({ todos, onApplySuggestion }: AISuggestionsProps) 
                       >
                         应用建议
                       </Button>
+                    ) : (
+                      <div className="text-xs text-[#6272a4] italic">
+                        此建议为提示信息
+                      </div>
                     )}
                   </motion.div>
                 ))

@@ -157,7 +157,16 @@ export function generateSmartSuggestions(todos: Todo[]): AISuggestion[] {
               : '一些任务') + 
             '，继续保持！',
       type: 'encourage',
-      priority: 'low'
+      priority: 'low',
+      action: () => {
+        // 为已完成的任务添加成就标记
+        return todos.map(todo => {
+          if (todo.completed && !todo.text.includes('🎉') && !todo.text.includes('✨')) {
+            return { ...todo, text: `🎉 ${todo.text}` }
+          }
+          return todo
+        })
+      }
     })
     return suggestions
   }
@@ -282,32 +291,107 @@ export function generateSmartSuggestions(todos: Todo[]): AISuggestion[] {
     }
   }
   
-  // 6. 任务过多建议
+  // 6. 任务过多建议 - 为高优先级任务添加番茄标记
   if (activeTodos.length > 8) {
-    suggestions.push({
-      text: `您当前有 ${activeTodos.length} 个待办事项，建议使用番茄工作法，每次专注完成 1-2 个高优先级任务`,
-      type: 'schedule',
-      priority: 'medium'
-    })
+    const highPriorityTasks = activeTodos.filter(t => t.priority === 'high')
+    if (highPriorityTasks.length > 0) {
+      suggestions.push({
+        text: `您当前有 ${activeTodos.length} 个待办事项，建议使用番茄工作法，为高优先级任务添加专注标记`,
+        type: 'schedule',
+        priority: 'medium',
+        action: () => {
+          return todos.map(todo => {
+            if (highPriorityTasks.some(hpt => hpt.id === todo.id) && !todo.text.startsWith('🍅')) {
+              return { ...todo, text: `🍅 ${todo.text}` }
+            }
+            return todo
+          })
+        }
+      })
+    } else {
+      // 如果没有高优先级任务，建议设置前3个为高优先级并添加标记
+      suggestions.push({
+        text: `您当前有 ${activeTodos.length} 个待办事项，建议将前3个任务设置为高优先级并使用番茄工作法`,
+        type: 'schedule',
+        priority: 'medium',
+        action: () => {
+          const modified = [...todos]
+          activeTodos.slice(0, 3).forEach((todo) => {
+            const todoIdx = modified.findIndex(t => t.id === todo.id)
+            if (todoIdx !== -1) {
+              modified[todoIdx] = {
+                ...modified[todoIdx],
+                priority: 'high' as const,
+                text: modified[todoIdx].text.startsWith('🍅') 
+                  ? modified[todoIdx].text 
+                  : `🍅 ${modified[todoIdx].text}`
+              }
+            }
+          })
+          return modified
+        }
+      })
+    }
   }
   
-  // 7. 长任务分解建议
+  // 7. 长任务分解建议 - 将长任务拆分为多个子任务
   const longTasks = activeTodos.filter(t => t.text.length > 30)
   if (longTasks.length > 0) {
     suggestions.push({
       text: `检测到 ${longTasks.length} 个较长的任务描述，建议将它们分解为更小的子任务`,
       type: 'decompose',
-      priority: 'low'
+      priority: 'low',
+      action: () => {
+        const modified: Todo[] = []
+        todos.forEach(todo => {
+          if (longTasks.some(lt => lt.id === todo.id)) {
+            // 将长任务按句号、逗号或"和"、"与"等分割
+            const parts = todo.text.split(/[，,。、和与及]/).filter(p => p.trim().length > 0)
+            if (parts.length > 1) {
+              // 创建多个子任务
+              parts.forEach((part, idx) => {
+                modified.push({
+                  ...todo,
+                  id: `${todo.id}-${idx}`,
+                  text: part.trim(),
+                  priority: idx === 0 ? todo.priority : 'medium' as const
+                })
+              })
+            } else {
+              // 如果无法分割，保持原样但添加分解提示
+              modified.push({
+                ...todo,
+                text: `📋 ${todo.text} (建议分解)`
+              })
+            }
+          } else {
+            modified.push(todo)
+          }
+        })
+        return modified
+      }
     })
   }
   
-  // 8. 完成率鼓励
+  // 8. 完成率鼓励 - 为已完成任务添加成就标记
   const completedTodos = todos.filter(t => t.completed)
   if (analysis.completionRate > 0.7 && completedTodos.length > 5) {
     suggestions.push({
-      text: `您的任务完成率是 ${Math.round(analysis.completionRate * 100)}%，表现优秀！继续保持这个节奏`,
+      text: `您的任务完成率是 ${Math.round(analysis.completionRate * 100)}%，表现优秀！建议为最近完成的任务添加成就标记`,
       type: 'encourage',
-      priority: 'low'
+      priority: 'low',
+      action: () => {
+        return todos.map(todo => {
+          // 为最近完成的任务添加成就标记（如果还没有）
+          if (todo.completed && !todo.text.includes('✨') && !todo.text.includes('🎉')) {
+            const isRecent = Date.now() - todo.createdAt < 7 * 24 * 60 * 60 * 1000
+            if (isRecent) {
+              return { ...todo, text: `✨ ${todo.text}` }
+            }
+          }
+          return todo
+        })
+      }
     })
   }
   
