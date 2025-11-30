@@ -22,9 +22,10 @@ interface TodoListProps {
   onReorder: (todos: Todo[]) => void
   onToggle: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (todo: Todo) => void
 }
 
-export function TodoList({ todos, onReorder, onToggle, onDelete }: TodoListProps) {
+export function TodoList({ todos, onReorder, onToggle, onDelete, onEdit }: TodoListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -62,6 +63,7 @@ export function TodoList({ todos, onReorder, onToggle, onDelete }: TodoListProps
                 todo={todo}
                 onToggle={onToggle}
                 onDelete={onDelete}
+                onEdit={onEdit}
               />
             ))}
           </AnimatePresence>

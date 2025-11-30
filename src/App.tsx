@@ -5,6 +5,7 @@ import { Scene3D } from './components/Scene3D'
 import { TodoList } from './components/TodoList'
 import { AISuggestions } from './components/AISuggestions'
 import { AIConfirmation } from './components/AIConfirmation'
+import { CalendarTimeline } from './components/CalendarTimeline'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './components/ui/dialog'
@@ -17,8 +18,11 @@ function App() {
   })
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [newTodoText, setNewTodoText] = useState('')
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [pendingChanges, setPendingChanges] = useState<{
     originalTodos: Todo[]
     modifiedTodos: Todo[]
@@ -39,8 +43,37 @@ function App() {
       }
       setTodos([...todos, newTodo])
       setNewTodoText('')
+      setPriority('medium')
       setIsAddDialogOpen(false)
     }
+  }
+
+  const editTodo = (todo: Todo) => {
+    setEditingTodo(todo)
+    setNewTodoText(todo.text)
+    setPriority(todo.priority)
+    setIsEditDialogOpen(true)
+  }
+
+  const saveEdit = () => {
+    if (editingTodo && newTodoText.trim()) {
+      setTodos(todos.map(todo => 
+        todo.id === editingTodo.id 
+          ? { ...todo, text: newTodoText.trim(), priority }
+          : todo
+      ))
+      setEditingTodo(null)
+      setNewTodoText('')
+      setPriority('medium')
+      setIsEditDialogOpen(false)
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingTodo(null)
+    setNewTodoText('')
+    setPriority('medium')
+    setIsEditDialogOpen(false)
   }
 
   const toggleTodo = (id: string) => {
@@ -89,7 +122,18 @@ function App() {
     <div className="min-h-screen relative overflow-hidden">
       <Scene3D />
       
-      <div className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
+      <div className="relative z-10 flex gap-6 px-4 py-12 max-w-7xl mx-auto">
+        {/* 左侧日历时间表 */}
+        <div className="w-80 flex-shrink-0">
+          <CalendarTimeline 
+            todos={todos} 
+            onDateSelect={setSelectedDate}
+            selectedDate={selectedDate}
+          />
+        </div>
+
+        {/* 中间主要内容区域 */}
+        <div className="flex-1 min-w-0">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -136,6 +180,7 @@ function App() {
               onReorder={reorderTodos}
               onToggle={toggleTodo}
               onDelete={deleteTodo}
+              onEdit={editTodo}
             />
           </div>
         )}
@@ -150,6 +195,7 @@ function App() {
               onReorder={reorderTodos}
               onToggle={toggleTodo}
               onDelete={deleteTodo}
+              onEdit={editTodo}
             />
           </div>
         )}
@@ -159,6 +205,7 @@ function App() {
             <p className="text-[#6272a4] text-lg">还没有待办事项，开始添加吧！</p>
           </div>
         )}
+        </div>
       </div>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -211,6 +258,62 @@ function App() {
               className="bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90"
             >
               添加
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 编辑待办对话框 */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="glass glass-strong border-[#bd93f9]/30 text-[#f8f8f2] bg-[#282a36]">
+          <DialogHeader>
+            <DialogTitle className="text-[#f8f8f2]">编辑待办</DialogTitle>
+            <DialogDescription className="text-[#6272a4]">
+              修改待办事项内容
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="输入待办事项..."
+              value={newTodoText}
+              onChange={(e) => setNewTodoText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+              className="bg-[#44475a] border-[#bd93f9]/30 text-[#f8f8f2] placeholder:text-[#6272a4] focus:border-[#bd93f9]"
+            />
+            
+            <div className="flex gap-2">
+              {(['low', 'medium', 'high'] as const).map((p) => (
+                <Button
+                  key={p}
+                  variant={priority === p ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPriority(p)}
+                  className={
+                    priority === p 
+                      ? 'bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90' 
+                      : 'border-[#bd93f9]/30 text-[#6272a4] hover:border-[#bd93f9] hover:text-[#f8f8f2]'
+                  }
+                >
+                  {p === 'high' ? '高优先级' : p === 'medium' ? '中优先级' : '低优先级'}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={cancelEdit}
+              className="border-[#bd93f9]/30 text-[#6272a4] hover:border-[#bd93f9] hover:text-[#f8f8f2]"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={saveEdit}
+              className="bg-[#bd93f9] text-[#282a36] hover:bg-[#bd93f9]/90"
+            >
+              保存
             </Button>
           </DialogFooter>
         </DialogContent>

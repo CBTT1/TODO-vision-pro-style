@@ -7,9 +7,10 @@ interface SortableTodoCardProps {
   todo: Todo
   onToggle: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (todo: Todo) => void
 }
 
-export function SortableTodoCard({ todo, onToggle, onDelete }: SortableTodoCardProps) {
+export function SortableTodoCard({ todo, onToggle, onDelete, onEdit }: SortableTodoCardProps) {
   const {
     attributes,
     listeners,
@@ -30,6 +31,7 @@ export function SortableTodoCard({ todo, onToggle, onDelete }: SortableTodoCardP
         todo={todo}
         onToggle={onToggle}
         onDelete={onDelete}
+        onEdit={onEdit}
         isDragging={isDragging}
       />
     </div>

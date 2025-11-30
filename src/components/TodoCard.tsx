@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Check, Sparkles, Trash2, GripVertical } from 'lucide-react'
+import { Check, Sparkles, Trash2, GripVertical, Edit } from 'lucide-react'
 import { Todo } from '@/types/todo'
 import { Button } from './ui/button'
 import { cn } from '@/lib/utils'
@@ -8,10 +8,11 @@ interface TodoCardProps {
   todo: Todo
   onToggle: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (todo: Todo) => void
   isDragging?: boolean
 }
 
-export function TodoCard({ todo, onToggle, onDelete, isDragging }: TodoCardProps) {
+export function TodoCard({ todo, onToggle, onDelete, onEdit, isDragging }: TodoCardProps) {
   return (
     <motion.div
       layout
@@ -84,6 +85,14 @@ export function TodoCard({ todo, onToggle, onDelete, isDragging }: TodoCardProps
         
         <div className="flex items-center gap-2">
           <GripVertical className="w-5 h-5 text-[#6272a4] group-hover:text-[#bd93f9] transition-colors" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(todo)}
+            className="text-[#6272a4] hover:text-[#8be9fd] hover:bg-[#8be9fd]/10"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
