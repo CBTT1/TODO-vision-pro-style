@@ -57,7 +57,7 @@ function App() {
     setTodos(newTodos)
   }
 
-  const applyAISuggestion = (suggestion: string, modifiedTodos: Todo[]) => {
+  const applyAISuggestion = (_suggestion: string, modifiedTodos: Todo[]) => {
     // 保存原始待办事项和修改后的待办事项
     setPendingChanges({
       originalTodos: [...todos],
